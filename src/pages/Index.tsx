@@ -4,12 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import FeedTab from '@/components/FeedTab';
+import ProfileTab from '@/components/ProfileTab';
+import MessagesTab from '@/components/MessagesTab';
+import ShopTab from '@/components/ShopTab';
 
 type Tag = {
   id: string;
@@ -240,238 +243,6 @@ const Index = () => {
     }
   };
 
-  const renderFeed = () => (
-    <div className="space-y-4 animate-fade-in pb-20">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Лента обсуждений</h1>
-        <Button 
-          onClick={() => setNewDiscussionOpen(true)}
-          className="neomorph neomorph-hover rounded-2xl"
-        >
-          <Icon name="Plus" size={20} className="mr-2" />
-          Создать
-        </Button>
-      </div>
-
-      {discussions.map((discussion) => (
-        <Card 
-          key={discussion.id} 
-          className="neomorph border-0 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer animate-slide-up"
-          onClick={() => setSelectedDiscussion(discussion)}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-start gap-3">
-              <Avatar className="w-12 h-12 border-2 border-primary/20">
-                <AvatarImage src={discussion.author.avatar} />
-                <AvatarFallback>{discussion.author.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-foreground">{discussion.author.name}</span>
-                  {discussion.author.tags.map(tag => (
-                    <Badge key={tag.id} variant="secondary" className={`${tag.color} text-xs`}>
-                      {tag.label}
-                    </Badge>
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground">{discussion.timestamp}</span>
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="pb-3">
-            <h3 className="font-semibold text-lg mb-2 text-foreground">{discussion.title}</h3>
-            <p className="text-muted-foreground text-sm line-clamp-2 mb-3">{discussion.content}</p>
-            <div className="flex flex-wrap gap-2">
-              {discussion.tags.map(tag => (
-                <Badge key={tag.id} variant="outline" className={`${tag.color} text-xs`}>
-                  {tag.label}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-
-          <CardFooter className="pt-3 border-t flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="gap-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLike(discussion.id);
-              }}
-            >
-              <Icon name="Heart" size={18} className="text-primary" />
-              <span className="text-sm">{discussion.likes}</span>
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="gap-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Icon name="MessageCircle" size={18} className="text-secondary" />
-              <span className="text-sm">{discussion.comments}</span>
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="gap-2 ml-auto"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSubscribe(discussion.id);
-              }}
-            >
-              <Icon name={discussion.isSubscribed ? "BellOff" : "Bell"} size={18} />
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderProfile = () => (
-    <div className="space-y-6 animate-fade-in pb-20">
-      <Card className="neomorph border-0">
-        <CardHeader>
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="relative">
-              <Avatar className="w-24 h-24 border-4 border-primary/20">
-                <AvatarImage src={currentUser.avatar} />
-                <AvatarFallback className="text-2xl">{currentUser.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 flex gap-1">
-                {currentUser.decorations.map((dec, idx) => (
-                  <span key={idx} className="text-xl">{dec}</span>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold mb-1">{currentUser.name}</h2>
-              <p className="text-muted-foreground text-sm">{currentUser.bio}</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {currentUser.tags.map(tag => (
-                <Badge key={tag.id} className={`${tag.color}`}>
-                  {tag.label}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="text-center p-4 neomorph-inset rounded-xl">
-              <div className="text-2xl font-bold text-primary">{currentUser.followers}</div>
-              <div className="text-xs text-muted-foreground">Подписчиков</div>
-            </div>
-            <div className="text-center p-4 neomorph-inset rounded-xl">
-              <div className="text-2xl font-bold text-secondary">{currentUser.coins}</div>
-              <div className="text-xs text-muted-foreground">Монет</div>
-            </div>
-          </div>
-          <Button className="w-full neomorph neomorph-hover rounded-xl">
-            <Icon name="Settings" size={18} className="mr-2" />
-            Редактировать профиль
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card className="neomorph border-0">
-        <CardHeader>
-          <h3 className="font-semibold text-lg">Мои подписки</h3>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {discussions.filter(d => d.isSubscribed).map(discussion => (
-            <div key={discussion.id} className="flex items-center gap-3 p-3 rounded-xl neomorph-inset">
-              <Icon name="Bell" size={18} className="text-primary" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{discussion.title}</p>
-                <p className="text-xs text-muted-foreground">by {discussion.author.name}</p>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
-
-  const renderMessages = () => (
-    <div className="space-y-4 animate-fade-in pb-20">
-      <h1 className="text-2xl font-bold mb-6">Сообщения</h1>
-      
-      {messages.map((message) => (
-        <Card 
-          key={message.id}
-          className={`neomorph border-0 cursor-pointer hover:shadow-lg transition-all ${
-            message.unread ? 'bg-primary/5' : ''
-          }`}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={message.from.avatar} />
-                <AvatarFallback>{message.from.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-foreground">{message.from.name}</span>
-                  <span className="text-xs text-muted-foreground">{message.timestamp}</span>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2">{message.text}</p>
-              </div>
-              {message.unread && (
-                <div className="w-2 h-2 rounded-full bg-primary mt-2" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-
-  const renderShop = () => (
-    <div className="space-y-6 animate-fade-in pb-20">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Магазин украшений</h1>
-        <div className="flex items-center gap-2 px-4 py-2 neomorph rounded-xl">
-          <Icon name="Coins" size={20} className="text-secondary" />
-          <span className="font-semibold">{currentUser.coins}</span>
-        </div>
-      </div>
-
-      {['Базовые', 'Премиум'].map(category => (
-        <div key={category}>
-          <h3 className="font-semibold text-lg mb-4">{category}</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {decorations.filter(d => d.category === category).map(decoration => (
-              <Card 
-                key={decoration.id}
-                className="neomorph border-0 overflow-hidden hover:shadow-lg transition-all"
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="text-5xl mb-3">{decoration.icon}</div>
-                  <h4 className="font-semibold mb-2">{decoration.name}</h4>
-                  <div className="flex items-center justify-center gap-1 text-secondary mb-3">
-                    <Icon name="Coins" size={16} />
-                    <span className="font-semibold">{decoration.price}</span>
-                  </div>
-                  <Button 
-                    size="sm"
-                    className="w-full neomorph neomorph-hover rounded-xl"
-                    onClick={() => handleBuyDecoration(decoration)}
-                  >
-                    Купить
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b neomorph">
@@ -527,10 +298,31 @@ const Index = () => {
       </header>
 
       <main className="container max-w-2xl mx-auto px-4 py-6">
-        {activeTab === 'feed' && renderFeed()}
-        {activeTab === 'profile' && renderProfile()}
-        {activeTab === 'messages' && renderMessages()}
-        {activeTab === 'shop' && renderShop()}
+        {activeTab === 'feed' && (
+          <FeedTab 
+            discussions={discussions}
+            onNewDiscussion={() => setNewDiscussionOpen(true)}
+            onSelectDiscussion={setSelectedDiscussion}
+            onLike={handleLike}
+            onSubscribe={handleSubscribe}
+          />
+        )}
+        {activeTab === 'profile' && (
+          <ProfileTab 
+            currentUser={currentUser}
+            discussions={discussions}
+          />
+        )}
+        {activeTab === 'messages' && (
+          <MessagesTab messages={messages} />
+        )}
+        {activeTab === 'shop' && (
+          <ShopTab 
+            decorations={decorations}
+            currentUserCoins={currentUser.coins}
+            onBuyDecoration={handleBuyDecoration}
+          />
+        )}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-lg border-t neomorph z-50">
